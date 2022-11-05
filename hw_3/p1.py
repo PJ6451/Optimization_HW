@@ -2,6 +2,10 @@ import numpy as np
 import conj_grad as scg
 import matplotlib.pyplot as plt
 
+def Hilbert(n):
+    i, j = np.ogrid[1:n+1, 1:n+1]
+    return 1/(i + j - 1)
+
 def plot_1_a(n: int, r_array: np.ndarray):
     iters = np.arange(1,r_array.size + 1)
     plt.plot(iters, r_array)
@@ -54,10 +58,7 @@ eig_12_list = []
 eig_20_list = []
 
 for n in n_list:
-    A = np.zeros([n,n])
-    for i in range(1,n+1):
-        for j in range(1,n+1):
-            A[i-1,j-1] = 1/(i+j-1)
+    A = Hilbert(n)
     
     evals, evecs = np.linalg.eig(A)
     if n == 5:
@@ -70,8 +71,10 @@ for n in n_list:
         eig_20_list = np.log10(np.abs(evals))
 
     cond_list.append(np.log10(np.linalg.cond(A)))
-    b = np.ones([n,1])
-    x_0 = np.zeros([n,1])
+    print((np.linalg.cond(A)-1)/(np.linalg.cond(A)+1))
+    print((np.sqrt(np.linalg.cond(A))-1)/(np.sqrt(np.linalg.cond(A))+1))
+    b = np.ones(n)
+    x_0 = np.zeros(n)
 
     r_list = scg.standard_cg(x_0, A, b)
     r_array = np.array(r_list)
