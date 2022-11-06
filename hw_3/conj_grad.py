@@ -27,7 +27,6 @@ def conj_dir_eig(n: int, x_k: np.ndarray, A: np.ndarray, b: np.ndarray):
         p_k = evecs[:,k]
         alpha_k =  -(r_k.T @ p_k) / (p_k.T @ A @ p_k)
         x_k = x_k + alpha_k * p_k
-        r_k = A @ x_k - b
     return r_list
 
 def standard_cg_get_min(x_k: np.ndarray, A: np.ndarray, b: np.ndarray):

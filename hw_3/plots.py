@@ -38,8 +38,7 @@ def plot_1_d(eig_5_list, eig_8_list, eig_12_list, eig_20_list):
     plt.title("$\log_{10} |\lambda_n|$ per size n")
     plt.xlabel("n")
     plt.ylabel("$\log_{10} |\lambda_n|$")
-    plt.xticks(range(0,20,4))
-        
+    plt.xticks(range(0,20,4))  
     filename = "scg_1_d"
     plt.savefig(filename)
     plt.clf()

@@ -28,14 +28,16 @@ for n in n_list:
         eig_20_list = np.log10(np.abs(evals))
 
     cond_list.append(np.log10(np.linalg.cond(A)))
-    print((np.linalg.cond(A)-1)/(np.linalg.cond(A)+1))
-    print((np.sqrt(np.linalg.cond(A))-1)/(np.sqrt(np.linalg.cond(A))+1))
+    aaa = np.log10((np.linalg.cond(A)-1)/(np.linalg.cond(A)+1))
+    bbb = np.log10((np.sqrt(np.linalg.cond(A))-1)/(np.sqrt(np.linalg.cond(A))+1))
+
     b = np.ones(n)
     x_0 = np.zeros(n)
 
     r_list = cg.standard_cg(x_0, A, b)
     r_array = np.array(r_list)
     iter_list.append(r_array.size-1)
+    print((bbb/aaa)*(r_array.size-1))
     plts.plot_1_a(n,r_array)
 
 plts.plot_1_b(n_list, iter_list)
