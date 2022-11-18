@@ -16,10 +16,9 @@ def p1():
     plt.xlabel('Iteration $k$')
     plt.ylabel("$log_{10}$")
     plt.show()
-    with pd.ExcelWriter("p1_bfgs.xlsx") as writer_1:
-        df1.to_excel(writer_1)
-    with pd.ExcelWriter("p1_newton.xlsx") as writer_2:
-        df2.to_excel(writer_2)
+    with pd.ExcelWriter("p1.xlsx") as writer_1:
+        df1.to_excel(writer_1, sheet_name='bfgs')
+        df2.to_excel(writer_1, sheet_name='newton')
 
 
 def p2():
@@ -58,5 +57,5 @@ def p4():
 
 if __name__ == '__main__':
     p1()
-    p2()
-    p4()
+    #p2()
+    #p4()
