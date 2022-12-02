@@ -198,6 +198,15 @@ def lorenz():
     ax.legend()
     fig.savefig("dmd_project_lorenz", dpi=200)
 
+    fig = plt.figure(figsize = (10, 7))
+    error = np.zeros([len(tvals)])
+    for i in range(len(tvals)):
+        error[i] = np.linalg.norm(rawdata[:,:,i]-recon[:,:,i], 2)
+    plt.plot(tvals,np.log10(error))
+    plt.xlabel('Time')
+    plt.title('Error of reconstruction over time')
+    fig.savefig("dmd_project_lorenz_error", dpi=200)
+
 if __name__ == '__main__':
     cent()
     sadd()
