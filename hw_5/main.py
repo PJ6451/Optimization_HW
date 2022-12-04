@@ -7,14 +7,12 @@ from pytictoc import TicToc
 def newtons_method(x_k, r_k, J):
     k = 1
     x_list = [x_k]
-    rk = r_k(x_k)
-    while np.linalg.norm(rk,2) > 1e-8:
+    while np.linalg.norm(r_k(x_k),2) > 1e-8:
         if k < 1e5:
             JJ = J(x_k)
-            p_k = -np.linalg.pinv(JJ).dot(rk)
+            p_k = -np.linalg.pinv(JJ).dot(r_k(x_k))
             x_k = x_k + p_k
             x_list.append(x_k)
-            rk = r_k(x_k)
             k += 1
         else:
             k = 'diverge'
@@ -25,8 +23,8 @@ def steepest_descent_bt(x_k, r_k, J):
     k = 1
     rk = r_k(x_k)
     f = lambda x: 0.5*np.dot(r_k(x), r_k(x))
-    grad_f = lambda x: (J(x).T).dot(r_k(x))
-    while np.linalg.norm(rk,2) > 1e-8:
+    grad_f = lambda x: J(x).T.dot(r_k(x))
+    while np.linalg.norm(r_k(x_k),2) > 1e-8:
         if k < 1e5:
             p_k = -(J(x_k).T).dot(rk)
             alpha = armijo(p_k, x_k, f, grad_f)
@@ -43,20 +41,18 @@ def armijo(p_k: np.ndarray, x_k: np.ndarray, f: callable, grad_f: callable)-> fl
     alpha = 1.
     rho = 0.5
     c = 10**(-4)
-    while f(x_k + alpha*p_k) > f(x_k) + c*alpha*((grad_f(x_k).T).dot(p_k)):
+    while f(x_k + alpha*p_k) > f(x_k) + c*alpha*(np.reshape(grad_f(x_k), (3,1))).T @ (np.reshape(p_k, (3,1))):
         alpha = alpha*rho
     return alpha
 
 def steepest_descent_e(x_k, r_k, J):
     k = 1
-    rk = r_k(x_k)
-    while np.linalg.norm(rk,2) > 1e-8:
+    while np.linalg.norm(r_k(x_k),2) > 1e-8:
         if k < 1e5:
-            p_k = -(J(x_k).T).dot(rk)
-            v = (J(x_k) @ J(x_k).T).dot(rk)
-            alpha = (np.dot(v,rk)) / (np.dot(v,v))
+            p_k = -(J(x_k).T).dot(r_k(x_k))
+            v = (J(x_k) @ J(x_k).T).dot(r_k(x_k))
+            alpha = (np.dot(v,r_k(x_k))) / (np.dot(v,v))
             x_k = x_k + alpha*p_k
-            rk = r_k(x_k)
             k += 1
         else:
             k = 'diverge'
@@ -77,7 +73,10 @@ def get_ic():
     return ic
 
 def p1():
-    r_k = lambda x: np.array([x[0]+x[1]-3,x[0]**2 + x[1]**2 - 9], dtype=float)
+    r_k = lambda x: np.array([
+        x[0]+x[1]-3, 
+        x[0]**2 + x[1]**2 - 9
+    ], dtype=float)
     J = lambda x: np.array([
         [1., 1.],
         [2*x[0], 2*x[1]]
@@ -90,11 +89,11 @@ def p1():
 
 def p2():
     ic = get_ic()
-    r_k = lambda x: np.array(
-        [x[0]**2 + x[1]**2 + x[2]**2 - 1,
+    r_k = lambda x: np.array([
+        x[0]**2 + x[1]**2 + x[2]**2 - 1,
         x[0] + x[1] + x[2],
-        x[0] - x[1]**2]
-    , dtype=float)
+        x[0] - x[1]**2
+    ], dtype=float)
     J = lambda x: np.array([
         [2*x[0], 2*x[1], 2*x[2]],
         [1., 1., 1.],
@@ -176,6 +175,6 @@ def p3():
         df.to_excel(writer)
 
 if __name__ == '__main__':
-    #p1()
+    p1()
     p2()
-    #p3()
+    p3()
