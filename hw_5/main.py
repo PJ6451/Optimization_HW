@@ -2,66 +2,54 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import pandas as pd
+from pytictoc import TicToc
 
-def newtons_method(x_k, r_k, J:callable):
-    t = time.time()*1000
+def newtons_method(x_k, r_k, J):
     k = 1
     x_list = [x_k]
     rk = r_k(x_k)
-    while np.linalg.norm(rk) > 1e-8:
+    while np.linalg.norm(rk,2) > 1e-8:
         if k < 1e5:
             JJ = J(x_k)
-            p_k = -np.linalg.pinv(JJ) @ rk
-            x_k = x_k + p_k[:,0]
+            p_k = -np.linalg.pinv(JJ).dot(rk)
+            x_k = x_k + p_k
             x_list.append(x_k)
             rk = r_k(x_k)
             k += 1
         else:
-            tf ='diverge'
             k = 'diverge'
-            return x_list, tf, k
-    tf = time.time()*1000 - t
-    return x_list, tf, k
+            return x_list, k
+    return x_list, k
 
-def steepest_descent_bt(x_k, r_k, J, numdim):
-    t = time.time()*1000
+def steepest_descent_bt(x_k, r_k, J):
     k = 1
-    x_list = [x_k]
     rk = r_k(x_k)
-    while np.linalg.norm(rk) > 1e-8:
+    while np.linalg.norm(rk,2) > 1e-8:
         if k < 1e5:
-            p_k = -J(x_k).T @ rk
-            x_k = x_k + p_k[:,0]
-            x_list.append(x_k)
+            p_k = -(J(x_k).T).dot(rk)
+            x_k = x_k + p_k
             rk = r_k(x_k)
             k += 1
         else:
-            tf ='diverge'
             k = 'diverge'
-            return tf, k
-    tf = time.time()*1000 - t
-    return tf, k
+            return k
+    return k
 
-def steepest_descent_e(x_k, r_k, J, numdim):
-    t = time.time()*1000
+def steepest_descent_e(x_k, r_k, J):
     k = 1
-    x_list = [x_k]
     rk = r_k(x_k)
-    while np.linalg.norm(rk) > 1e-8:
+    while np.linalg.norm(rk,2) > 1e-8:
         if k < 1e5:
-            p_k = -np.linalg.pinv(J(x_k)) @ rk
-            v = np.reshape(J(x_k) @ J(x_k).T @ rk,[numdim,1])
-            alpha = (v.T @ rk) / (v.T @ v)
-            x_k = x_k + alpha*p_k[:,0]
-            x_list.append(x_k)
+            p_k = -(J(x_k).T).dot(rk)
+            v = (J(x_k) @ J(x_k).T).dot(rk)
+            alpha = (np.dot(v,rk)) / (np.dot(v,v))
+            x_k = x_k + alpha*p_k
             rk = r_k(x_k)
             k += 1
         else:
-            tf ='diverge'
             k = 'diverge'
-            return tf, k
-    tf = time.time()*1000 - t
-    return tf, k
+            return k
+    return k
 
 def get_ic():
     ic = np.array([
@@ -82,18 +70,18 @@ def p1():
         [2*x[0], 2*x[1]]
     ], dtype=float)
     x_k = np.array([1,5])
-    x_list, _, _ = newtons_method(x_k, r_k, J)
+    x_list, _ = newtons_method(x_k, r_k, J)
     df = pd.DataFrame(x_list, columns=['x_k_1', 'x_k_2'])
     with pd.ExcelWriter("p1.xlsx") as writer:
         df.to_excel(writer)
 
 def p2():
     ic = get_ic()
-    r_k = lambda x: np.array([
-        [x[0]**2 + x[1]**2 + x[2]**2 - 1],
-        [x[0] + x[1] + x[2]],
-        [x[0] - x[1]**2]
-    ], dtype=float)
+    r_k = lambda x: np.array(
+        [x[0]**2 + x[1]**2 + x[2]**2 - 1,
+        x[0] + x[1] + x[2],
+        x[0] - x[1]**2]
+    , dtype=float)
     J = lambda x: np.array([
         [2*x[0], 2*x[1], 2*x[2]],
         [1., 1., 1.],
@@ -103,13 +91,25 @@ def p2():
     t_list_1 = []
     i_list_2 = []
     t_list_2 = []
+    t = TicToc()
     for i in ic:
-        _, tf_1, k_1 = newtons_method(i, r_k, J)
-        tf_2, k_2 = steepest_descent_bt(i, r_k, J, 3)
-        i_list_1.append(k_1)
-        t_list_1.append(tf_1)
-        i_list_2.append(k_2)
-        t_list_2.append(tf_2)
+        #newton
+        t0 = t.tic()
+        _, k = newtons_method(i, r_k, J)
+        tf = t.tocvalue()*1000
+        if k == 'diverge':
+            tf = 'diverge'
+        i_list_1.append(k)
+        t_list_1.append(tf)
+        #steepest descent
+        t0 = t.tic()
+        k = steepest_descent_bt(i, r_k, J)
+        tf = t.tocvalue()*1000
+        if k == 'diverge':
+            tf = 'diverge'
+        i_list_2.append(k)
+        t_list_2.append(tf)
+
     z_list = list(zip(i_list_1, t_list_1, i_list_2, t_list_2))
     clmns = [
         'Number of Iterations 1', 
@@ -123,11 +123,11 @@ def p2():
 
 def p3():
     ic = get_ic()
-    r_k = lambda x: np.array([
-        [x[0]**2 + x[1]**2 + x[2]**2 - 1],
-        [x[0] + x[1] + x[2]],
-        [x[0] - x[1]**2]
-    ], dtype=float)
+    r_k = lambda x: np.array(
+        [x[0]**2 + x[1]**2 + x[2]**2 - 1,
+        x[0] + x[1] + x[2],
+        x[0] - x[1]**2]
+    , dtype=float)
     J = lambda x: np.array([
         [2*x[0], 2*x[1], 2*x[2]],
         [1, 1, 1],
@@ -136,7 +136,12 @@ def p3():
     i_list = []
     t_list = []
     for i in ic:
-        tf, k = steepest_descent_e(i, r_k, J, 3)
+        t = TicToc()
+        t0 = t.tic()
+        k = steepest_descent_e(i, r_k, J)
+        tf = t.tocvalue()*1000
+        if k == 'diverge':
+            tf = 'diverge'
         i_list.append(k)
         t_list.append(tf)
     z_list = list(zip(i_list, t_list))
@@ -149,6 +154,6 @@ def p3():
         df.to_excel(writer)
 
 if __name__ == '__main__':
-    #p1()
+    p1()
     p2()
     p3()
