@@ -208,9 +208,9 @@ def lorenz():
     fig.savefig("dmd_project_lorenz_error", dpi=200)
 
 if __name__ == '__main__':
-    cent()
-    sadd()
-    spir()
-    harm()
-    duff()
+    #cent()
+    #sadd()
+    #spir()
+    #harm()
+    #duff()
     lorenz()
