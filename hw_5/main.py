@@ -24,16 +24,28 @@ def newtons_method(x_k, r_k, J):
 def steepest_descent_bt(x_k, r_k, J):
     k = 1
     rk = r_k(x_k)
+    f = lambda x: 0.5*np.dot(r_k(x), r_k(x))
+    grad_f = lambda x: (J(x).T).dot(r_k(x))
     while np.linalg.norm(rk,2) > 1e-8:
         if k < 1e5:
             p_k = -(J(x_k).T).dot(rk)
-            x_k = x_k + p_k
+            alpha = armijo(p_k, x_k, f, grad_f)
+            x_k = x_k + alpha*p_k
             rk = r_k(x_k)
             k += 1
         else:
             k = 'diverge'
-            return k
-    return k
+            x_k = 'diverge'
+            return x_k, k
+    return x_k, k
+
+def armijo(p_k: np.ndarray, x_k: np.ndarray, f: callable, grad_f: callable)-> float:
+    alpha = 1.
+    rho = 0.5
+    c = 10**(-4)
+    while f(x_k + alpha*p_k) > f(x_k) + c*alpha*((grad_f(x_k).T).dot(p_k)):
+        alpha = alpha*rho
+    return alpha
 
 def steepest_descent_e(x_k, r_k, J):
     k = 1
@@ -48,8 +60,9 @@ def steepest_descent_e(x_k, r_k, J):
             k += 1
         else:
             k = 'diverge'
-            return k
-    return k
+            x_k = 'diverge'
+            return x_k, k
+    return x_k, k
 
 def get_ic():
     ic = np.array([
@@ -89,31 +102,37 @@ def p2():
     ], dtype=float)
     i_list_1 = []
     t_list_1 = []
+    x_list_1 = []
     i_list_2 = []
     t_list_2 = []
+    x_list_2 = []
     t = TicToc()
     for i in ic:
         #newton
         t0 = t.tic()
-        _, k = newtons_method(i, r_k, J)
+        x_list, k = newtons_method(i, r_k, J)
         tf = t.tocvalue()*1000
         if k == 'diverge':
             tf = 'diverge'
         i_list_1.append(k)
         t_list_1.append(tf)
+        x_list_1.append(x_list[-1])
         #steepest descent
         t0 = t.tic()
-        k = steepest_descent_bt(i, r_k, J)
+        x_k, k = steepest_descent_bt(i, r_k, J)
         tf = t.tocvalue()*1000
         if k == 'diverge':
             tf = 'diverge'
         i_list_2.append(k)
         t_list_2.append(tf)
+        x_list_2.append(x_k)
 
-    z_list = list(zip(i_list_1, t_list_1, i_list_2, t_list_2))
+    z_list = list(zip(x_list_1, i_list_1, t_list_1, x_list_2, i_list_2, t_list_2))
     clmns = [
+        'x_k 1',
         'Number of Iterations 1', 
         'Computing Time 1',
+        'x_k 2',
         'Number of Iterations 2', 
         'Computing Time 2'
         ]
@@ -135,17 +154,20 @@ def p3():
     ], dtype=float)
     i_list = []
     t_list = []
+    x_list = []
     for i in ic:
         t = TicToc()
         t0 = t.tic()
-        k = steepest_descent_e(i, r_k, J)
+        x_k, k = steepest_descent_e(i, r_k, J)
         tf = t.tocvalue()*1000
         if k == 'diverge':
             tf = 'diverge'
         i_list.append(k)
         t_list.append(tf)
-    z_list = list(zip(i_list, t_list))
+        x_list.append(x_k)
+    z_list = list(zip(x_list, i_list, t_list))
     clmns = [
+        'x_k',
         'Number of Iterations', 
         'Computing Time'
         ]
@@ -154,6 +176,6 @@ def p3():
         df.to_excel(writer)
 
 if __name__ == '__main__':
-    p1()
+    #p1()
     p2()
-    p3()
+    #p3()
