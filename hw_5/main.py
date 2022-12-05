@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import time
 import pandas as pd
 from pytictoc import TicToc
+import warnings
 
 def newtons_method(x_k, r_k, J):
     k = 1
@@ -10,13 +11,17 @@ def newtons_method(x_k, r_k, J):
     while np.linalg.norm(r_k(x_k),2) > 1e-8:
         if k < 1e5:
             JJ = J(x_k)
-            p_k = -np.linalg.pinv(JJ).dot(r_k(x_k))
+            try:
+                p_k = -np.linalg.inv(JJ) @ r_k(x_k)
+            except np.linalg.LinAlgError:
+                k = 'diverge'
+                return x_list, k
             x_k = x_k + p_k
             x_list.append(x_k)
             k += 1
         else:
             k = 'diverge'
-            return x_list, k
+            return x_list, k           
     return x_list, k
 
 def steepest_descent_bt(x_k, r_k, J):
@@ -172,6 +177,6 @@ def p3():
         df.to_excel(writer)
 
 if __name__ == '__main__':
-    p1()
+    #p1()
     p2()
-    p3()
+    #p3()
