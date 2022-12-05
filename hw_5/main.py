@@ -104,7 +104,6 @@ def p2():
     x_list_1 = []
     i_list_2 = []
     t_list_2 = []
-    x_list_2 = []
     t = TicToc()
     for i in ic:
         #newton
@@ -115,7 +114,7 @@ def p2():
             tf = 'diverge'
         i_list_1.append(k)
         t_list_1.append(tf)
-        x_list_1.append(x_list[-1])
+        x_list_1.append(i)
         #steepest descent
         t0 = t.tic()
         x_k, k = steepest_descent_bt(i, r_k, J)
@@ -124,14 +123,12 @@ def p2():
             tf = 'diverge'
         i_list_2.append(k)
         t_list_2.append(tf)
-        x_list_2.append(x_k)
 
-    z_list = list(zip(x_list_1, i_list_1, t_list_1, x_list_2, i_list_2, t_list_2))
+    z_list = list(zip(x_list_1, i_list_1, t_list_1, i_list_2, t_list_2))
     clmns = [
-        'x_k 1',
+        'guess',
         'Number of Iterations 1', 
         'Computing Time 1',
-        'x_k 2',
         'Number of Iterations 2', 
         'Computing Time 2'
         ]
@@ -163,7 +160,7 @@ def p3():
             tf = 'diverge'
         i_list.append(k)
         t_list.append(tf)
-        x_list.append(x_k)
+        x_list.append(i)
     z_list = list(zip(x_list, i_list, t_list))
     clmns = [
         'x_k',
