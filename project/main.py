@@ -40,7 +40,7 @@ def raw_proc_data(rawdata, numiconds, numdim, NT, tvals, dt):
 
     #dmd
     thrshhld = 15
-    recon = dmd(stacked_data, dt, tvals, thrshhld)
+    recon = cm_dmd(stacked_data, NT, thrshhld, tvals, dt)
 
     #unstack data
     unstacked_data = np.zeros([numiconds, numdim, NT+1])
@@ -208,9 +208,9 @@ def lorenz():
     fig.savefig("dmd_project_lorenz_error", dpi=200)
 
 if __name__ == '__main__':
-    #cent()
-    #sadd()
-    #spir()
-    #harm()
-    #duff()
+    cent()
+    sadd()
+    spir()
+    harm()
+    duff()
     lorenz()
